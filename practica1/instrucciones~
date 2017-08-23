@@ -1,0 +1,8 @@
+pulsando las teclas:
+
+a dibuja el objeto como aristas
+p dibuja el objeto con puntos
+s dibuja el objeto solido
+c dibuja el objeto en modo ajedrez
+1 dibuja el cubo(se dibuja con el ultimo modo elegido)
+2 dibuja el tetraedro(se dibuja con el ultimo modo elegido)

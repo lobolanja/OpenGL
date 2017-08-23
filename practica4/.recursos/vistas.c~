@@ -1,0 +1,163 @@
+/* -------------------------------------------------------------------------*/
+/* Guardar y visualizar imágenes, A. López                                  */
+/* -------------------------------------------------------------------------*/
+
+
+#include <GL/glut.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define anchoVentana     640  /* ancho de la ventana */
+#define altoVentana      480  /* alto de la ventana */
+#define posicionVentanaX  50  /* pos. X de la esquina sup-izq de la ventana */
+#define posicionVentanaY  50  /* pos. Y de la esquina sup-izq de la ventana */
+
+double aspecto;   /* relación ancho/alto de la ventana */
+int    ancho, alto;
+
+/* Función que establece la proyección perspectiva -------------------------*/
+void proyeccionPerspectiva (void) {
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(14.0, aspecto, 1.0, 10.0); 
+}
+
+/* Función que establece la proyección paralela ----------------------------*/
+void proyeccionParalela (void) {
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(-1.5f*aspecto, 1.5f*aspecto, -1.5f, 1.5f, -2.0f, 2.0f); 
+}
+
+/* Rutina asociada a eventos de ventana ------------------------------------*/
+void eventoVentana (GLsizei _ancho, GLsizei _alto) {
+  
+  ancho= _ancho;
+  alto= _alto;
+  aspecto= (GLdouble) ancho/alto;
+}
+
+/* Rutina asociada a eventos de teclado ------------------------------------*/
+void eventoTeclado (unsigned char tecla, int x, int y) {
+
+  switch (tecla) {
+  case  27: exit (0); break;
+  case 'q': exit (0); break;
+  case 'Q': exit (0); break;
+  }
+}
+
+void escena (void) {
+
+  glPushMatrix();
+  glRotatef(25.000000,0.000000,0.000000,1.000000);
+  glRotatef(90.000000,1.000000,0.000000,0.000000);
+  glutWireTorus(0.200000,1.000000,20.000000,20.000000);
+  glPopMatrix();
+  
+  glPushMatrix();
+  glScalef(0.500000,1.000000,0.500000);
+  glutWireSphere(1.000000,20.000000,20.000000);
+  glPopMatrix();
+}
+
+/* Rutina de dibujo de la escena -------------------------------------------*/
+void Dibuja (void) {
+
+  FILE *fichero;
+  int   mitadAncho= ancho/2, 
+        mitadAlto=   alto/2;
+
+  glColor3f (0,0,0);
+  glClearColor (1,1,1,0);
+  glClear (GL_COLOR_BUFFER_BIT  | GL_DEPTH_BUFFER_BIT);
+
+  glMatrixMode (GL_MODELVIEW);
+  glLoadIdentity();
+
+  /* establece proyección paralela */
+  proyeccionParalela();
+
+  /* área izquierda arriba */
+  glViewport (0, mitadAlto, mitadAncho, mitadAlto);
+  escena ();
+
+  /* área izquierda abajo */
+  glViewport (0, 0, mitadAncho, mitadAlto);
+  glPushMatrix();
+    glRotatef (90.0, 0.0, 1.0, 0.0);
+    escena ();
+  glPopMatrix();
+
+  /* área derecha arriba */
+  glViewport (mitadAncho, mitadAlto, mitadAncho, mitadAlto);
+  glPushMatrix();
+    glRotatef (90.0, 1.0, 0.0, 0.0);
+    escena ();
+  glPopMatrix();
+
+  /* área derecha abajo */
+  glViewport (mitadAncho, 0, mitadAncho, mitadAlto);
+  proyeccionPerspectiva();
+  gluLookAt (3.0, 3.0, 3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+  escena();
+
+  /* dibujo de la división */
+  glViewport (0, 0, ancho, alto);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluOrtho2D (0, mitadAncho, 0, mitadAlto);
+  glBegin (GL_LINES); 
+    glVertex2i (mitadAncho/2, 0);
+    glVertex2i (mitadAncho/2, mitadAlto);
+    glVertex2i (0, mitadAlto/2);
+    glVertex2i (mitadAncho, mitadAlto/2);
+  glEnd();
+
+  glutSwapBuffers();
+}
+
+/* Opciones sobre la visualización de la escena ----------------------------*/
+void opcionesVisualizacion (void) {
+
+  glDepthFunc   (GL_LEQUAL);
+  glEnable      (GL_DEPTH_TEST);
+}
+
+/* Establece las funciones que atienden los distintos eventos --------------*/
+void  asociaEventos (void) {
+
+  glutKeyboardFunc (eventoTeclado);
+  glutReshapeFunc  (eventoVentana);
+}
+
+/* Abre la ventana de la aplicación ----------------------------------------*/
+void abreVentana (int numParametros, char **listaParametros) {
+
+  glutInit               (&numParametros, listaParametros);
+  glutInitDisplayMode    (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+  glutInitWindowSize     (anchoVentana, altoVentana);
+  glutInitWindowPosition (posicionVentanaX, posicionVentanaY);
+  glutCreateWindow       (listaParametros[0]);
+}
+
+/* Programa principal ------------------------------------------------------*/
+int main (int numParametros, char **listaParametros) {
+
+  /* crea la ventana de la aplicación */
+  abreVentana (numParametros, listaParametros);
+
+  /* asocia funciones a eventos de ventana, teclado o ratón */
+  asociaEventos ();              
+
+  /* establece la función de dibujo de la escena */
+  glutDisplayFunc (Dibuja);
+
+  /* establece opciones sobre la visualización de la escena */
+  opcionesVisualizacion();
+
+  /* bucle a la espera de eventos */
+  glutMainLoop();
+}

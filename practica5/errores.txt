@@ -1,0 +1,3 @@
+make: No se hace nada para «default».
+g++ -g -DXWINDOWS -DSHM -I/usr/include -I.   -c -o practica3.o practica3.cc
+g++ -o  practica3 -g -DXWINDOWS -DSHM -I/usr/include -I. practica3.o file_ply_stl.cc dibujo.cc ovni.cc -lGLU -lGL -lglut  -Wno-cpp
